@@ -2,6 +2,15 @@ use contentful::{ContentfulClient, QueryBuilder};
 use dotenv;
 use serde::{Deserialize, Serialize};
 
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct SimplePerson {
+    name: String,
+    title: String,
+    #[serde(rename = "shortBio")]
+    short_bio: Option<String>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Person {
     name: String,
@@ -28,7 +37,7 @@ async fn get_entry_works() {
     let expected_name = "Saju".to_string();
     let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k".to_string();
     let actual = contentful_client
-        .get_entry::<Person>(entry_id)
+        .get_entry::<SimplePerson>(entry_id)
         .await
         .unwrap();
     dbg!(&actual);
