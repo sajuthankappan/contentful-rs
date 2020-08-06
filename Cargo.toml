@@ -4,6 +4,12 @@ version = "0.1.0"
 authors = ["Saju Thankappan <sajuthankappan@gmail.com>"]
 edition = "2018"
 license = "MIT"
+description = "Contentful API Rust Client"
+homepage = "https://github.com/sajuthankappan/contentful-rs"
+repository = "https://github.com/sajuthankappan/contentful-rs"
+readme = "README.md"
+keywords = ["contentful", "cms"]
+categories = ["api-bindings"]
 
 [dependencies]
 log = "0.4.11"
