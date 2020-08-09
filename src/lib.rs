@@ -1,6 +1,6 @@
 mod contentful_client;
 mod http_client;
+mod models;
 mod query_builder;
 
-pub use contentful_client::ContentfulClient;
-pub use query_builder::QueryBuilder;
+pub use crate::{contentful_client::ContentfulClient, query_builder::QueryBuilder};

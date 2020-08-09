@@ -1,27 +1,38 @@
 use crate::http_client;
-use crate::QueryBuilder;
+use crate::query_builder::QueryBuilder;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub struct ContentfulClient {
-    access_token: String,
+    delivery_api_key: String,
     space_id: String,
     base_url: String,
 }
 
 impl ContentfulClient {
-    pub fn new(access_token: String, space_id: String) -> ContentfulClient {
+    pub fn new(delivery_api_key: &str, space_id: &str) -> ContentfulClient {
         ContentfulClient {
             base_url: "https://cdn.contentful.com/spaces".to_string(),
-            access_token,
-            space_id,
+            delivery_api_key: delivery_api_key.to_string(),
+            space_id: space_id.to_string(),
         }
     }
 
-    pub async fn get_entry<T>(&self, entry_id: String) -> Result<T, Box<dyn std::error::Error>>
+    pub async fn get_entry<T>(&self, entry_id: &str) -> Result<T, Box<dyn std::error::Error>>
     where
         for<'a> T: Serialize + Deserialize<'a>,
     {
+        let mut json = self.get_entry_json_value(entry_id).await?;
+        let entry_value = json.get_mut("fields").unwrap();
+        let entry_string = entry_value.to_string();
+        let entry = serde_json::from_str::<T>(&entry_string.as_str())?;
+        Ok(entry)
+    }
+
+    pub async fn get_entry_json_value(
+        &self,
+        entry_id: &str,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
         let environment = "master";
         let url = format!(
             "{base_url}/{space_id}/environments/{environment}/entries/{entry_id}",
@@ -30,12 +41,8 @@ impl ContentfulClient {
             environment = &environment,
             entry_id = &entry_id
         );
-        let mut json = http_client::get::<Value>(&url, &self.access_token).await?;
-        let entry_value = json.get_mut("fields").unwrap();
-        dbg!(&entry_value);
-        let entry_string = entry_value.to_string();
-        let entry = serde_json::from_str::<T>(&entry_string.as_str())?;
-        Ok(entry)
+        let json_value = http_client::get::<Value>(&url, &self.delivery_api_key).await?;
+        Ok(json_value)
     }
 
     pub async fn get_entries<T>(
@@ -46,24 +53,24 @@ impl ContentfulClient {
         for<'a> T: Serialize + Deserialize<'a>,
     {
         let query_string = if let Some(query_builder) = query_builder {
-            Some(query_builder.build())
+            query_builder.build()
         } else {
-            None
+            "".to_string()
         };
 
-        self.get_entries_by_query_string::<T>(query_string).await
+        self.get_entries_by_query_string::<T>(query_string.as_str())
+            .await
     }
 
     pub async fn get_entries_by_query_string<T>(
         &self,
-        query_string: Option<String>,
+        query_string: &str,
     ) -> Result<Vec<T>, Box<dyn std::error::Error>>
     where
         for<'a> T: Serialize + Deserialize<'a>,
     {
         log::debug!("query_string: {:?}", &query_string);
         let environment = "master";
-        let query_string = query_string.unwrap_or("".to_string());
         let url = format!(
             "{base_url}/{space_id}/environments/{environment}/entries{query_string}",
             base_url = &self.base_url,
@@ -71,7 +78,7 @@ impl ContentfulClient {
             environment = &environment,
             query_string = &query_string
         );
-        let mut json = http_client::get::<Value>(&url, &self.access_token).await?;
+        let mut json = http_client::get::<Value>(&url, &self.delivery_api_key).await?;
         let includes = json.get("includes").unwrap().clone(); // TODO: Check if clone can be avoided
         let items = json.get_mut("items").unwrap();
 
@@ -87,7 +94,7 @@ impl ContentfulClient {
 
     pub async fn get_entries_by_type<T>(
         &self,
-        content_type: String,
+        content_type: &str,
         query_builder: Option<QueryBuilder>,
     ) -> Result<Vec<T>, Box<dyn std::error::Error>>
     where

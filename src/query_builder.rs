@@ -13,15 +13,15 @@ impl QueryBuilder {
         }
     }
 
-    pub fn content_type_is(mut self, content_type_id: String) -> QueryBuilder {
+    pub fn content_type_is(mut self, content_type_id: &str) -> QueryBuilder {
         self.query_string_values
             .insert("content_type".to_string(), content_type_id.to_string());
         self
     }
 
-    pub fn order_by(mut self, order: String) -> QueryBuilder {
+    pub fn order_by(mut self, order: &str) -> QueryBuilder {
         self.query_string_values
-            .insert("order".to_string(), order);
+            .insert("order".to_string(), order.to_string());
         self
     }
 
@@ -43,74 +43,76 @@ impl QueryBuilder {
         self
     }
 
-    pub fn locale_is(mut self, locale: String, value: String) -> QueryBuilder {
-        self.query_string_values.insert(locale, value);
+    pub fn locale_is(mut self, locale: &str, value: &str) -> QueryBuilder {
+        self.query_string_values
+            .insert(locale.to_string(), value.to_string());
         self
     }
 
-    pub fn field_equals(mut self, field: String, value: String) -> QueryBuilder {
-        self.query_string_values.insert(field, value);
+    pub fn field_equals(mut self, field: &str, value: &str) -> QueryBuilder {
+        self.query_string_values
+            .insert(field.to_string(), value.to_string());
         self
     }
 
-    pub fn field_does_not_equal(mut self, field: String, value: String) -> QueryBuilder {
+    pub fn field_does_not_equal(mut self, field: &str, value: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, value, "[ne]");
         self
     }
 
-    pub fn field_equals_all(mut self, field: String, values: String) -> QueryBuilder {
+    pub fn field_equals_all(mut self, field: &str, values: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, values, "[all]");
         self
     }
 
-    pub fn field_includes(mut self, field: String, values: String) -> QueryBuilder {
+    pub fn field_includes(mut self, field: &str, values: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, values, "[in]");
         self
     }
 
-    pub fn field_excludes(mut self, field: String, values: String) -> QueryBuilder {
+    pub fn field_excludes(mut self, field: &str, values: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, values, "[nin]");
         self
     }
 
-    pub fn field_exists(mut self, field: String, must_exist: bool) -> QueryBuilder {
+    pub fn field_exists(mut self, field: &str, must_exist: bool) -> QueryBuilder {
         let key = format!("{}[exists]", field);
         self.query_string_values.insert(key, must_exist.to_string());
         self
     }
 
-    pub fn field_less_than(mut self, field: String, value: String) -> QueryBuilder {
+    pub fn field_less_than(mut self, field: &str, value: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, value, "[lt]");
         self
     }
 
-    pub fn field_less_than_or_equal_to(mut self, field: String, value: String) -> QueryBuilder {
+    pub fn field_less_than_or_equal_to(mut self, field: &str, value: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, value, "[lte]");
         self
     }
 
-    pub fn field_greater_than(mut self, field: String, value: String) -> QueryBuilder {
+    pub fn field_greater_than(mut self, field: &str, value: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, value, "[gt]");
         self
     }
 
-    pub fn field_greater_than_or_equal_to(mut self, field: String, value: String) -> QueryBuilder {
+    pub fn field_greater_than_or_equal_to(mut self, field: &str, value: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, value, "[gte]");
         self
     }
 
-    pub fn field_matches(mut self, field: String, value: String) -> QueryBuilder {
+    pub fn field_matches(mut self, field: &str, value: &str) -> QueryBuilder {
         self = self.add_field_restriction(field, value, "[match]");
         self
     }
 
-    pub fn links_to_entry(mut self, id: String) -> QueryBuilder {
-        self = self.add_field_restriction("links_to_entry".to_string(), id, "");
+    pub fn links_to_entry(mut self, id: &str) -> QueryBuilder {
+        self = self.add_field_restriction("links_to_entry", id, "");
         self
     }
 
-    pub fn links_to_asset(mut self, id: String) -> QueryBuilder {
-        self = self.add_field_restriction("links_to_asset".to_string(), id, "");
+    pub fn links_to_asset(mut self, id: &str) -> QueryBuilder {
+        self = self.add_field_restriction("links_to_asset", id, "");
         self
     }
 
@@ -134,12 +136,12 @@ impl QueryBuilder {
 
     pub fn add_field_restriction(
         mut self,
-        field: String,
-        value: String,
+        field: &str,
+        value: &str,
         operator: &str,
     ) -> QueryBuilder {
         let key = format!("{}{}", field, operator);
-        self.query_string_values.insert(key, value);
+        self.query_string_values.insert(key, value.into());
         self
     }
 }

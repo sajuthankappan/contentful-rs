@@ -2,7 +2,6 @@ use contentful::{ContentfulClient, QueryBuilder};
 use dotenv;
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SimplePerson {
     name: String,
@@ -33,15 +32,33 @@ async fn get_entry_works() {
     setup();
     let access_token = std::env::var("CONTENTFUL_ACCESS_TOKEN").unwrap();
     let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
-    let contentful_client = ContentfulClient::new(access_token, space_id);
-    let expected_name = "Saju".to_string();
-    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k".to_string();
+    let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
+    let expected_name = "Saju";
+    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k";
     let actual = contentful_client
-        .get_entry::<SimplePerson>(entry_id)
+        .get_entry::<SimplePerson>(&entry_id.to_string())
         .await
         .unwrap();
     dbg!(&actual);
-    let actual_name = actual.name;
+    let actual_name = actual.name.as_str();
+    assert_eq!(actual_name, expected_name);
+}
+
+#[tokio::test]
+async fn get_entry_json_value_works() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_ACCESS_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
+    let expected_name = "Saju";
+    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k".to_string();
+    let actual = contentful_client
+        .get_entry_json_value(&entry_id)
+        .await
+        .unwrap();
+    let actual_json_str = serde_json::to_string(&actual).unwrap();
+    dbg!(actual_json_str);
+    let actual_name = actual["fields"]["name"].as_str().unwrap();
     assert_eq!(actual_name, expected_name);
 }
 
@@ -50,16 +67,16 @@ async fn get_entries_by_query_string_works() {
     setup();
     let access_token = std::env::var("CONTENTFUL_ACCESS_TOKEN").unwrap();
     let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
-    let contentful_client = ContentfulClient::new(access_token, space_id);
-    let expected_name = "Saju".to_string();
-    let query_string = format!("?content_type=person&fields.name={}", &expected_name);
+    let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
+    let name = "Saju";
+    let query_string = format!("?content_type=person&fields.name={}", &name);
     let actual = contentful_client
-        .get_entries_by_query_string::<Person>(Some(query_string))
+        .get_entries_by_query_string::<Person>(query_string.as_str())
         .await
         .unwrap();
     dbg!(&actual);
     let actual_name = actual[0].clone().name;
-    assert_eq!(actual_name, expected_name);
+    assert_eq!(actual_name, name);
 }
 
 #[tokio::test]
@@ -67,16 +84,16 @@ async fn get_entries_by_type_works() {
     setup();
     let access_token = std::env::var("CONTENTFUL_ACCESS_TOKEN").unwrap();
     let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
-    let contentful_client = ContentfulClient::new(access_token, space_id);
-    let expected_name = "Saju".to_string();
-    let query_builder = QueryBuilder::new().field_equals("fields.name".to_string(), expected_name.clone());
+    let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
+    let name = "Saju";
+    let query_builder = QueryBuilder::new().field_equals("fields.name", name);
     let actual = contentful_client
-        .get_entries_by_type::<Person>("person".to_string(), Some(query_builder))
+        .get_entries_by_type::<Person>("person", Some(query_builder))
         .await
         .unwrap();
     dbg!(&actual);
     let actual_name = actual[0].clone().name;
-    assert_eq!(actual_name, expected_name);
+    assert_eq!(actual_name, name);
 }
 
 fn setup() {
