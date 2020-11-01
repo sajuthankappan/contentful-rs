@@ -4,16 +4,16 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub struct ContentfulClient {
-    delivery_api_key: String,
+    delivery_api_access_token: String,
     space_id: String,
     base_url: String,
 }
 
 impl ContentfulClient {
-    pub fn new(delivery_api_key: &str, space_id: &str) -> ContentfulClient {
+    pub fn new(delivery_api_access_token: &str, space_id: &str) -> ContentfulClient {
         ContentfulClient {
             base_url: "https://cdn.contentful.com/spaces".to_string(),
-            delivery_api_key: delivery_api_key.to_string(),
+            delivery_api_access_token: delivery_api_access_token.to_string(),
             space_id: space_id.to_string(),
         }
     }
@@ -41,7 +41,7 @@ impl ContentfulClient {
             environment = &environment,
             entry_id = &entry_id
         );
-        let json_value = http_client::get::<Value>(&url, &self.delivery_api_key).await?;
+        let json_value = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?;
         Ok(json_value)
     }
 
@@ -78,7 +78,7 @@ impl ContentfulClient {
             environment = &environment,
             query_string = &query_string
         );
-        let mut json = http_client::get::<Value>(&url, &self.delivery_api_key).await?;
+        let mut json = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?;
         let includes = json.get("includes").unwrap().clone(); // TODO: Check if clone can be avoided
         let items = json.get_mut("items").unwrap();
 
