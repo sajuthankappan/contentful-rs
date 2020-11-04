@@ -3,28 +3,35 @@ use dotenv;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct SimplePerson {
     name: String,
     title: String,
-    #[serde(rename = "shortBio")]
     short_bio: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct Person {
     name: String,
     title: String,
-    #[serde(rename = "shortBio")]
     short_bio: Option<String>,
-    #[serde(rename = "favoriteProduct")]
     favorite_product: Option<Product>,
-    #[serde(rename = "interestedProducts")]
     interested_products: Option<Vec<Product>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct Product {
     title: String,
+    related_trainings: Option<Vec<TrainingPlan>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct TrainingPlan {
+    topic: String,
+    slug: String,
 }
 
 #[tokio::test]
@@ -86,7 +93,9 @@ async fn get_entries_by_type_works() {
     let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
     let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
     let name = "Saju";
-    let query_builder = QueryBuilder::new().field_equals("fields.name", name);
+    let query_builder = QueryBuilder::new()
+        .field_equals("fields.name", name)
+        .include(2);
     let actual = contentful_client
         .get_entries_by_type::<Person>("person", Some(query_builder))
         .await

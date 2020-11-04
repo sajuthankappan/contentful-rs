@@ -83,7 +83,7 @@ impl ContentfulClient {
         let items = json.get_mut("items").unwrap();
 
         if items.is_array() {
-            self.get_array(items, &includes)?;
+            self.resolve_array(items, &includes)?;
             let ar_string = items.to_string();
             let entries = serde_json::from_str::<Vec<T>>(&ar_string.as_str())?;
             Ok(entries)
@@ -108,7 +108,7 @@ impl ContentfulClient {
         //self.get_entries_by_query_string::<T>(Some(new_query_string)).await
     }
 
-    fn get_array(
+    fn resolve_array(
         &self,
         value: &mut Value,
         includes: &Value,
@@ -116,7 +116,7 @@ impl ContentfulClient {
         let items = value.as_array_mut().unwrap();
         for item in items {
             if item.is_object() {
-                self.get_object(item, &includes)?;
+                self.resolve_object(item, &includes)?;
             } else {
                 unimplemented!();
             }
@@ -124,33 +124,18 @@ impl ContentfulClient {
         Ok(())
     }
 
-    fn get_object(
+    fn resolve_object(
         &self,
         value: &mut Value,
         includes: &Value,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let sys_type = value["sys"]["type"].clone();
         if sys_type == "Entry" {
-            if let Some(fields) = value.get_mut("fields") {
-                if fields.is_object() {
-                    let entry_object = fields.as_object_mut().unwrap();
-                    for (_field_name, field_value) in entry_object {
-                        if field_value.is_object() {
-                            self.get_object(field_value, &includes)?;
-                        } else if field_value.is_array() {
-                            self.get_array(field_value, &includes)?;
-                        }
-                    }
-                    *value = fields.clone();
-                } else {
-                    unimplemented!();
-                }
-            } else {
-                unimplemented!();
-            }
+            self.resolve_entry(value, &includes)?;
+        //*value = value["fields"].clone();
         } else if sys_type == "Link" {
             self.resolve_link(value, &includes)?;
-            *value = value["fields"].clone();
+        //*value = value["fields"].clone();
         } else {
             let node_type = value["nodeType"].clone();
             if node_type == "document" {
@@ -159,6 +144,34 @@ impl ContentfulClient {
                 unimplemented!("{} - {} not implemented", &sys_type, &node_type);
             }
         }
+        Ok(())
+    }
+
+    fn resolve_entry(
+        &self,
+        value: &mut Value,
+        includes: &Value,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        if let Some(fields) = value.get_mut("fields") {
+            if fields.is_object() {
+                let entry_object = fields.as_object_mut().unwrap();
+                for (_field_name, field_value) in entry_object {
+                    if field_value.is_object() {
+                        self.resolve_object(field_value, &includes)?;
+                    } else if field_value.is_array() {
+                        self.resolve_array(field_value, &includes)?;
+                    } else {
+                        // Regular string, number, etc, values. No need to do anything.
+                    }
+                }
+                *value = fields.clone();
+            } else {
+                unimplemented!();
+            }
+        } else {
+            unimplemented!();
+        }
+
         Ok(())
     }
 
@@ -171,18 +184,25 @@ impl ContentfulClient {
         let link_id = value["sys"]["id"].clone();
         if link_type == "Entry" {
             let included_entries = includes["Entry"].as_array().unwrap();
-            let mut filter_entries = included_entries
+            let mut filtered_entries = included_entries
                 .iter()
                 .filter(|entry| entry["sys"]["id"].to_string() == link_id.to_string())
                 .take(1);
-            let included_entry = filter_entries.next();
-            if let Some(entry) = included_entry {
-                value["fields"] = entry["fields"].clone();
+            let linked_entry = filtered_entries.next();
+            if let Some(entry) = linked_entry {
+                let mut entry = entry.clone();
+                self.resolve_entry(&mut entry, &includes)?;
+                *value = entry;
+                //value["fields"] = entry["fields"].clone();
+                //*value = entry["fields"].clone();
             }
         } else if link_type == "Asset" {
+            // TODO: Asset
         } else {
             unimplemented!();
         }
+
+        //*value = value["fields"].clone();
         Ok(())
     }
 }

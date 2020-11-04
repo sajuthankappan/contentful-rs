@@ -1,0 +1,4 @@
+GET https://cdn.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries?fields.name=Saju&content_type=person&include=2
+Authorization: Bearer {{sajuContentfulAccessToken}}
+
+###
