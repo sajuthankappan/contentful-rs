@@ -9,16 +9,14 @@ pub struct Space {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Locale {
     name: String,
     code: String,
-    #[serde(rename = "fallbackCode")]
     fallback_code: Option<String>,
     default: bool,
     optional: bool,
-    #[serde(rename = "ContentManagementApi")]
     content_management_api: bool,
-    #[serde(rename = "ContentDeliveryApi")]
     content_delivery_api: bool,
 }
 

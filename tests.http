@@ -2,3 +2,7 @@ GET https://cdn.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/mas
 Authorization: Bearer {{sajuContentfulAccessToken}}
 
 ###
+GET https://api.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries/3YrHEsZ9iUsEQOu6IQsI6k
+Authorization: Bearer {{sajuContentfulManagementAccessToken}}
+
+###
