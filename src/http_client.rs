@@ -21,15 +21,12 @@ where
     }
 }
 
-pub(crate) async fn post<T, U>(
+pub(crate) async fn post(
     url: &str,
     bearer_token: &str,
     content_type_id: &str,
-    data: &T,
-) -> Result<U, Box<dyn std::error::Error>>
-where
-    for<'a> T: Serialize + Deserialize<'a>,
-    for<'a> U: Serialize + Deserialize<'a>,
+    data: &Value,
+) -> Result<Value, Box<dyn std::error::Error>>
 {
     let client = reqwest::Client::new();
     let resp = client
@@ -41,7 +38,7 @@ where
         .await?;
 
     if resp.status() == StatusCode::OK || resp.status() == StatusCode::CREATED {
-        let json = resp.json::<U>().await?;
+        let json = resp.json::<Value>().await?;
         Ok(json)
     } else {
         dbg!(resp);
