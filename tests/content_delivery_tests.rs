@@ -1,38 +1,6 @@
-use contentful::{ContentfulClient, QueryBuilder};
+use contentful::{models::SystemProperties, ContentfulClient, QueryBuilder};
 use dotenv;
 use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct SimplePerson {
-    name: String,
-    title: String,
-    short_bio: Option<String>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Person {
-    name: String,
-    title: String,
-    short_bio: Option<String>,
-    favorite_product: Option<Product>,
-    interested_products: Option<Vec<Product>>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Product {
-    title: String,
-    related_trainings: Option<Vec<TrainingPlan>>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct TrainingPlan {
-    topic: String,
-    slug: String,
-}
 
 #[tokio::test]
 async fn get_entry_works() {
@@ -45,10 +13,13 @@ async fn get_entry_works() {
     let actual = contentful_client
         .get_entry::<SimplePerson>(&entry_id.to_string())
         .await
+        .unwrap()
         .unwrap();
     dbg!(&actual);
     let actual_name = actual.name.as_str();
     assert_eq!(actual_name, expected_name);
+    let created_at = actual.sys.created_at();
+    dbg!(created_at);
 }
 
 #[tokio::test]
@@ -62,6 +33,7 @@ async fn get_entry_json_value_works() {
     let actual = contentful_client
         .get_entry_json_value(&entry_id)
         .await
+        .unwrap()
         .unwrap();
     let actual_json_str = serde_json::to_string(&actual).unwrap();
     dbg!(actual_json_str);
@@ -108,4 +80,37 @@ async fn get_entries_by_type_works() {
 fn setup() {
     dotenv::dotenv().ok();
     let _ = env_logger::builder().is_test(true).try_init();
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SimplePerson {
+    name: String,
+    title: String,
+    short_bio: Option<String>,
+    sys: SystemProperties,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Person {
+    name: String,
+    title: String,
+    short_bio: Option<String>,
+    favorite_product: Option<Product>,
+    interested_products: Option<Vec<Product>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Product {
+    title: String,
+    related_trainings: Option<Vec<TrainingPlan>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct TrainingPlan {
+    topic: String,
+    slug: String,
 }

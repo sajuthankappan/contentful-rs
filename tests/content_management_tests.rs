@@ -1,4 +1,4 @@
-use contentful::{ContentfulManagementClient};
+use contentful::{ContentfulManagementClient, models::{Entry, SystemProperties}};
 use dotenv;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -16,9 +16,9 @@ async fn get_entry_works() {
     let actual = contentful_client
         .get_entry(&entry_id.to_string())
         .await
-        .unwrap();
+        .unwrap().unwrap();
     dbg!(&actual);
-    let actual_name = actual["fields"]["name"]["en-US"].clone();
+    let actual_name = actual.fields()["name"]["en-US"].clone();
     assert_eq!(actual_name, expected_name);
 }
 
@@ -39,7 +39,7 @@ async fn create_entry_from_json_value_works() {
         },
     }});
     let entry_created = contentful_client
-        .create_entry_from_json_value::<Value>("person", &entry)
+        .create_entry_from_json::<Value>(&entry, "person")
         .await
         .unwrap();
     dbg!(&entry_created);
@@ -62,7 +62,7 @@ async fn create_entry_works() {
 
     let entry = PersonMap { name, title };
     let entry_created = contentful_client
-        .create_entry::<PersonMap>("person", &entry)
+        .create_entry::<PersonMap>(&entry, "person")
         .await
         .unwrap();
     dbg!(&entry_created);
@@ -83,11 +83,35 @@ async fn create_entry_for_locale_works() {
 
     let entry = Person { name, title };
     let entry_created = contentful_client
-        .create_entry_for_locale::<Person>("person", "en-US", &entry)
+        .create_entry_for_locale::<Person>(&entry, "person", "en-US")
         .await
         .unwrap();
     dbg!(&entry_created);
     let actual_name = entry_created.name;
+    assert_eq!(actual_name, expected_name);
+}
+
+#[tokio::test]
+async fn update_entry_for_locale_works() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_MANAGEMENT_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client =
+        ContentfulManagementClient::new(access_token.as_str(), space_id.as_str());
+    let expected_name = "Saju-rs-3";
+    let name = "Saju-rs-3".into();
+    let title = "Mr".into();
+
+    let person = Person { name, title };
+    let sys = SystemProperties::with_version("3zEzRLcj41sahE9SuTdRsU".into(), 13);
+    let entry = Entry::new(person, sys);
+    //let entry = ContentfulManagementClient::get_entry(entry_id);
+    let entry_updated = contentful_client
+        .update_entry_for_locale(&entry, "3zEzRLcj41sahE9SuTdRsU", "en-US", "person")
+        .await
+        .unwrap();
+    dbg!(&entry_updated);
+    let actual_name = entry_updated.fields().clone().name;
     assert_eq!(actual_name, expected_name);
 }
 

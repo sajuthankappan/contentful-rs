@@ -1,7 +1,7 @@
 mod contentful_client;
 mod contentful_management_client;
 mod http_client;
-mod models;
+pub mod models;
 mod query_builder;
 
 pub use crate::{
