@@ -14,11 +14,31 @@ async fn get_entry_works() {
     let expected_name = "Saju";
     let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k";
     let actual = contentful_client
-        .get_entry(&entry_id.to_string())
+        .get_entry(&entry_id)
         .await
         .unwrap().unwrap();
     dbg!(&actual);
     let actual_name = actual.fields()["name"]["en-US"].clone();
+    assert_eq!(actual_name, expected_name);
+}
+
+
+#[tokio::test]
+async fn get_entry_for_locale_works() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_MANAGEMENT_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client =
+        ContentfulManagementClient::new(access_token.as_str(), space_id.as_str());
+    let expected_name = "Saju";
+    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k";
+    let locale = "en-US";
+    let actual = contentful_client
+        .get_entry_for_locale::<Person>(&entry_id, locale)
+        .await
+        .unwrap().unwrap();
+    dbg!(&actual);
+    let actual_name = actual.fields().name.clone();
     assert_eq!(actual_name, expected_name);
 }
 

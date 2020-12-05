@@ -1,6 +1,6 @@
 use reqwest;
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 pub(crate) async fn get<T>(
@@ -8,7 +8,7 @@ pub(crate) async fn get<T>(
     bearer_token: &String,
 ) -> Result<Option<T>, Box<dyn std::error::Error>>
 where
-    for<'a> T: Serialize + Deserialize<'a>,
+    T: DeserializeOwned,
 {
     let client = reqwest::Client::new();
     let resp = client.get(url).bearer_auth(&bearer_token).send().await?;
