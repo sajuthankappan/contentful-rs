@@ -74,3 +74,36 @@ where
         Entry { sys, fields: entry }
     }
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize, Getters, Setters)]
+#[getset(get = "pub", set = "pub")]
+pub struct Asset {
+    pub description: String,
+    pub title: String,
+    pub file: File,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Getters, Setters)]
+#[getset(get = "pub", set = "pub")]
+#[serde(rename_all = "camelCase")]
+pub struct File {
+    pub file_name: String,
+    pub content_type: String,
+    pub url: String,
+    pub upload_url: Option<String>,
+    pub details: FileDetails,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Getters, Setters)]
+#[getset(get = "pub", set = "pub")]
+pub struct FileDetails {
+    pub size: i64,
+    pub image: ImageDetails,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Getters, Setters)]
+#[getset(get = "pub", set = "pub")]
+pub struct ImageDetails {
+    pub height: i32,
+    pub width: i32,
+}

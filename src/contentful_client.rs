@@ -207,6 +207,23 @@ impl ContentfulClient {
         Ok(())
     }
 
+    fn resolve_asset(
+        &self,
+        value: &mut Value,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        if let Some(fields) = value.get_mut("fields") {
+            if fields.is_object() {
+                *value = fields.clone();
+            } else {
+                unimplemented!();
+            }
+        } else {
+            unimplemented!();
+        }
+
+        Ok(())
+    }
+
     fn resolve_link(
         &self,
         value: &mut Value,
@@ -229,7 +246,17 @@ impl ContentfulClient {
                 //*value = entry["fields"].clone();
             }
         } else if link_type == "Asset" {
-            // TODO: Asset
+            let included_assets = includes["Asset"].as_array().unwrap();
+            let mut filtered_assets = included_assets
+                .iter()
+                .filter(|entry| entry["sys"]["id"].to_string() == link_id.to_string())
+                .take(1);
+            let linked_asset = filtered_assets.next();
+            if let Some(asset) = linked_asset {
+                let mut asset = asset.clone();
+                self.resolve_asset(&mut asset)?;
+                *value = asset;
+            }
         } else {
             unimplemented!();
         }

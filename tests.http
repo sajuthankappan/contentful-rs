@@ -1,4 +1,4 @@
-GET https://cdn.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries?fields.name=Saju&content_type=person&include=2
+GET https://cdn.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries?fields.name=Saju&content_type=person&include=3
 Authorization: Bearer {{sajuContentfulAccessToken}}
 
 ###
@@ -12,7 +12,6 @@ Authorization: Bearer {{sajuContentfulManagementAccessToken}}
 ###
 GET https://api.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries/3zEzRLcj41sahE9SuTdRsU
 Authorization: Bearer {{sajuContentfulManagementAccessToken}}
-
 
 ###
 PUT https://api.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries/3zEzRLcj41sahE9SuTdRsU

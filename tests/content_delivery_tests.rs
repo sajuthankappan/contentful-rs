@@ -1,4 +1,4 @@
-use contentful::{models::SystemProperties, ContentfulClient, QueryBuilder};
+use contentful::{models::Asset, models::SystemProperties, ContentfulClient, QueryBuilder};
 use dotenv;
 use serde::{Deserialize, Serialize};
 
@@ -48,7 +48,7 @@ async fn get_entries_by_query_string_works() {
     let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
     let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
     let name = "Saju";
-    let query_string = format!("?content_type=person&fields.name={}", &name);
+    let query_string = format!("?content_type=person&fields.name={}&include=3", &name);
     let actual = contentful_client
         .get_entries_by_query_string::<Person>(query_string.as_str())
         .await
@@ -99,6 +99,8 @@ struct Person {
     short_bio: Option<String>,
     favorite_product: Option<Product>,
     interested_products: Option<Vec<Product>>,
+    image: Option<Asset>,
+    //sys: SystemProperties,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
