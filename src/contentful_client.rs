@@ -102,17 +102,20 @@ impl ContentfulClient {
             environment = &environment,
             query_string = &query_string
         );
-        if let Some(mut json) =
-            http_client::get::<Value>(&url, &self.delivery_api_access_token).await?
+        if let Some(json) = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?
         {
-            let includes = json.get("includes").unwrap().clone(); // TODO: Check if clone can be avoided
-            let items = json.get_mut("items").unwrap();
+            if let Some(mut items) = json.clone().get_mut("items") {
+                if items.is_array() {
+                    if let Some(includes) = json.get("includes") {
+                        self.resolve_array(&mut items, &includes)?;
+                    }
 
-            if items.is_array() {
-                self.resolve_array(items, &includes)?;
-                let ar_string = items.to_string();
-                let entries = serde_json::from_str::<Vec<T>>(&ar_string.as_str())?;
-                Ok(entries)
+                    let ar_string = items.to_string();
+                    let entries = serde_json::from_str::<Vec<T>>(&ar_string.as_str())?;
+                    Ok(entries)
+                } else {
+                    unimplemented!();
+                }
             } else {
                 unimplemented!();
             }
