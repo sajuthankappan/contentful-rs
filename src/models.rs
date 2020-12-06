@@ -78,8 +78,8 @@ where
 #[derive(Clone, Debug, Serialize, Deserialize, Getters, Setters)]
 #[getset(get = "pub", set = "pub")]
 pub struct Asset {
-    pub description: String,
-    pub title: String,
+    pub description: Option<String>,
+    pub title: Option<String>,
     pub file: File,
 }
 
@@ -98,7 +98,7 @@ pub struct File {
 #[getset(get = "pub", set = "pub")]
 pub struct FileDetails {
     pub size: i64,
-    pub image: ImageDetails,
+    pub image: Option<ImageDetails>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Getters, Setters)]
