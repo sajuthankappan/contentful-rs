@@ -1,4 +1,32 @@
-GET https://cdn.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries?fields.name=Saju&content_type=person&include=2
+GET https://cdn.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries?fields.name=Saju&content_type=person&include=3
 Authorization: Bearer {{sajuContentfulAccessToken}}
 
 ###
+GET https://cdn.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries/3YrHEsZ9iUsEQOu6IQsI6k
+Authorization: Bearer {{sajuContentfulAccessToken}}
+
+###
+GET https://api.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries/3YrHEsZ9iUsEQOu6IQsI6k
+Authorization: Bearer {{sajuContentfulManagementAccessToken}}
+
+###
+GET https://api.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries/3zEzRLcj41sahE9SuTdRsU
+Authorization: Bearer {{sajuContentfulManagementAccessToken}}
+
+###
+PUT https://api.contentful.com/spaces/{{sajuContentfulSpaceId}}/environments/master/entries/3zEzRLcj41sahE9SuTdRsU
+Authorization: Bearer {{sajuContentfulManagementAccessToken}}
+X-Contentful-Content-Type: person
+X-Contentful-Version: 9
+
+
+{
+  "fields": {
+    "name": {
+      "en-US": "Saju-rs-3.."
+    },
+    "title": {
+      "en-US": "Mr"
+    }
+  }
+}

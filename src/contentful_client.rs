@@ -1,7 +1,7 @@
-use crate::http_client;
 use crate::query_builder::QueryBuilder;
+use crate::{http_client, models::Entry};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 pub struct ContentfulClient {
     delivery_api_access_token: String,
@@ -18,21 +18,45 @@ impl ContentfulClient {
         }
     }
 
-    pub async fn get_entry<T>(&self, entry_id: &str) -> Result<T, Box<dyn std::error::Error>>
+    pub async fn get_entry<T>(
+        &self,
+        entry_id: &str,
+    ) -> Result<Option<T>, Box<dyn std::error::Error>>
     where
         for<'a> T: Serialize + Deserialize<'a>,
     {
-        let mut json = self.get_entry_json_value(entry_id).await?;
-        let entry_value = json.get_mut("fields").unwrap();
-        let entry_string = entry_value.to_string();
-        let entry = serde_json::from_str::<T>(&entry_string.as_str())?;
-        Ok(entry)
+        if let Some(entry) = self.get_contentful_entry(entry_id).await? {
+            let mut entry_json_value = entry.fields().clone();
+            entry_json_value["sys"] = json!(entry.sys());
+            let entry_string = entry_json_value.to_string();
+            let entry = serde_json::from_str::<T>(&entry_string.as_str())?;
+            Ok(Some(entry))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn get_contentful_entry(
+        &self,
+        entry_id: &str,
+    ) -> Result<Option<Entry<Value>>, Box<dyn std::error::Error>> {
+        let environment = "master";
+        let url = format!(
+            "{base_url}/{space_id}/environments/{environment}/entries/{entry_id}",
+            base_url = &self.base_url,
+            space_id = &self.space_id,
+            environment = &environment,
+            entry_id = &entry_id
+        );
+        let json_value =
+            http_client::get::<Entry<Value>>(&url, &self.delivery_api_access_token).await?;
+        Ok(json_value)
     }
 
     pub async fn get_entry_json_value(
         &self,
         entry_id: &str,
-    ) -> Result<Value, Box<dyn std::error::Error>> {
+    ) -> Result<Option<Value>, Box<dyn std::error::Error>> {
         let environment = "master";
         let url = format!(
             "{base_url}/{space_id}/environments/{environment}/entries/{entry_id}",
@@ -78,15 +102,23 @@ impl ContentfulClient {
             environment = &environment,
             query_string = &query_string
         );
-        let mut json = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?;
-        let includes = json.get("includes").unwrap().clone(); // TODO: Check if clone can be avoided
-        let items = json.get_mut("items").unwrap();
+        if let Some(json) = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?
+        {
+            if let Some(mut items) = json.clone().get_mut("items") {
+                if items.is_array() {
+                    if let Some(includes) = json.get("includes") {
+                        self.resolve_array(&mut items, &includes)?;
+                    }
 
-        if items.is_array() {
-            self.resolve_array(items, &includes)?;
-            let ar_string = items.to_string();
-            let entries = serde_json::from_str::<Vec<T>>(&ar_string.as_str())?;
-            Ok(entries)
+                    let ar_string = items.to_string();
+                    let entries = serde_json::from_str::<Vec<T>>(&ar_string.as_str())?;
+                    Ok(entries)
+                } else {
+                    unimplemented!();
+                }
+            } else {
+                unimplemented!();
+            }
         } else {
             unimplemented!();
         }
@@ -175,6 +207,23 @@ impl ContentfulClient {
         Ok(())
     }
 
+    fn resolve_asset(
+        &self,
+        value: &mut Value,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        if let Some(fields) = value.get_mut("fields") {
+            if fields.is_object() {
+                *value = fields.clone();
+            } else {
+                unimplemented!();
+            }
+        } else {
+            unimplemented!();
+        }
+
+        Ok(())
+    }
+
     fn resolve_link(
         &self,
         value: &mut Value,
@@ -197,7 +246,17 @@ impl ContentfulClient {
                 //*value = entry["fields"].clone();
             }
         } else if link_type == "Asset" {
-            // TODO: Asset
+            let included_assets = includes["Asset"].as_array().unwrap();
+            let mut filtered_assets = included_assets
+                .iter()
+                .filter(|entry| entry["sys"]["id"].to_string() == link_id.to_string())
+                .take(1);
+            let linked_asset = filtered_assets.next();
+            if let Some(asset) = linked_asset {
+                let mut asset = asset.clone();
+                self.resolve_asset(&mut asset)?;
+                *value = asset;
+            }
         } else {
             unimplemented!();
         }
