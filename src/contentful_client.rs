@@ -149,7 +149,10 @@ impl ContentfulClient {
         for item in items {
             if item.is_object() {
                 self.resolve_object(item, &includes)?;
+            } else if item.is_string() || item.is_number() {
+                // do nothing
             } else {
+                log::error!("Unimplemented item {}", &item);
                 unimplemented!();
             }
         }
@@ -207,10 +210,7 @@ impl ContentfulClient {
         Ok(())
     }
 
-    fn resolve_asset(
-        &self,
-        value: &mut Value,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn resolve_asset(&self, value: &mut Value) -> Result<(), Box<dyn std::error::Error>> {
         if let Some(fields) = value.get_mut("fields") {
             if fields.is_object() {
                 *value = fields.clone();
