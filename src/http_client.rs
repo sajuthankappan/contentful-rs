@@ -13,15 +13,17 @@ where
     let client = reqwest::Client::new();
     let resp = client.get(url).bearer_auth(&bearer_token).send().await?;
 
-    if resp.status() == StatusCode::OK {
-        let json = resp.json::<T>().await?;
-        Ok(Some(json))
-    } else if resp.status() == StatusCode::NOT_FOUND {
-        Ok(None)
-    } else {
-        log::warn!("{:?}", &resp);
-        log::warn!("{:?}", &resp.text().await?);
-        todo!("handle response status not < 300");
+    match resp.status() {
+        StatusCode::OK => {
+            let json = resp.json::<T>().await?;
+            Ok(Some(json))
+        }
+        StatusCode::NOT_FOUND => Ok(None),
+        _ => {
+            log::warn!("{:?}", &resp);
+            log::warn!("{:?}", &resp.text().await?);
+            todo!("handle response status not < 300");
+        }
     }
 }
 
@@ -40,13 +42,16 @@ pub(crate) async fn post(
         .send()
         .await?;
 
-    if resp.status() == StatusCode::OK || resp.status() == StatusCode::CREATED {
-        let json = resp.json::<Value>().await?;
-        Ok(json)
-    } else {
-        log::warn!("{:?}", &resp);
-        log::warn!("{:?}", &resp.text().await?);
-        todo!("handle response status not < 300");
+    match resp.status() {
+        StatusCode::OK | StatusCode::CREATED => {
+            let json = resp.json::<Value>().await?;
+            Ok(json)
+        }
+        _ => {
+            log::warn!("{:?}", &resp);
+            log::warn!("{:?}", &resp.text().await?);
+            todo!("handle response status not < 300");
+        }
     }
 }
 
@@ -70,12 +75,15 @@ pub(crate) async fn put(
 
     let resp = builder.send().await?;
 
-    if resp.status() == StatusCode::OK {
-        let json = resp.json::<Value>().await?;
-        Ok(json)
-    } else {
-        log::warn!("{:?}", &resp);
-        log::warn!("{:?}", &resp.text().await?);
-        todo!("handle response status not < 300");
+    match resp.status() {
+        StatusCode::OK | StatusCode::CREATED => {
+            let json = resp.json::<Value>().await?;
+            Ok(json)
+        }
+        _ => {
+            log::warn!("{:?}", &resp);
+            log::warn!("{:?}", &resp.text().await?);
+            todo!("handle response status not < 300");
+        }
     }
 }
