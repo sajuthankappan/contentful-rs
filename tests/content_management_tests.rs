@@ -112,7 +112,7 @@ async fn create_entry_for_locale_works() {
 }
 
 #[tokio::test]
-async fn update_entry_for_locale_works() {
+async fn create_or_update_entry_for_locale_works() {
     setup();
     let access_token = std::env::var("CONTENTFUL_MANAGEMENT_TOKEN").unwrap();
     let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
@@ -127,7 +127,7 @@ async fn update_entry_for_locale_works() {
     let entry = Entry::new(person, sys);
     //let entry = ContentfulManagementClient::get_entry(entry_id);
     let entry_updated = contentful_client
-        .update_entry_for_locale(&entry, "3zEzRLcj41sahE9SuTdRsU", "en-US", "person")
+        .create_or_update_entry_for_locale(&entry, "3zEzRLcj41sahE9SuTdRsU", "en-US", "person")
         .await
         .unwrap();
     dbg!(&entry_updated);

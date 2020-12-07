@@ -122,7 +122,7 @@ impl ContentfulManagementClient {
         Ok(updated_entry)
     }
 
-    pub async fn update_entry_from_json(
+    pub async fn create_or_update_entry_from_json(
         &self,
         entry: &Value,
         id: &str,
@@ -147,7 +147,7 @@ impl ContentfulManagementClient {
         Ok(json)
     }
 
-    pub async fn update_entry(
+    pub async fn create_or_update_entry(
         &self,
         entry: &Entry<Value>,
         id: &str,
@@ -155,7 +155,7 @@ impl ContentfulManagementClient {
     ) -> Result<Entry<Value>, Box<dyn std::error::Error>> {
         if let Some(version) = entry.sys().version() {
             let entry_updated = self
-                .update_entry_from_json(&json!(entry), id, version, content_type_id)
+                .create_or_update_entry_from_json(&json!(entry), id, version, content_type_id)
                 .await?;
             let entry_updated_string = entry_updated.to_string();
             let entry = serde_json::from_str::<Entry<Value>>(&entry_updated_string.as_str())?;
@@ -165,7 +165,7 @@ impl ContentfulManagementClient {
         }
     }
 
-    pub async fn update_entry_for_locale<T>(
+    pub async fn create_or_update_entry_for_locale<T>(
         &self,
         entry: &Entry<T>,
         id: &str,
@@ -178,7 +178,7 @@ impl ContentfulManagementClient {
         let entry_json = helpers::reconstruct_json_object(entry.fields(), locale)?;
         let entry_to_update = Entry::new(entry_json, entry.sys().clone());
         let updated_entry_json = self
-            .update_entry(&entry_to_update, id, content_type_id)
+            .create_or_update_entry(&entry_to_update, id, content_type_id)
             .await?;
         let updated_entry_typed = helpers::convert_json_object_to_typed_entry(
             json!(updated_entry_json.fields()),
