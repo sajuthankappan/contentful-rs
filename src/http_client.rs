@@ -53,19 +53,22 @@ pub(crate) async fn post(
 pub(crate) async fn put(
     url: &str,
     bearer_token: &str,
-    version: i32,
+    version: &Option<i32>,
     content_type_id: &str,
     data: &Value,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    let resp = client
+    let mut builder = client
         .put(url)
         .bearer_auth(&bearer_token)
         .header("X-Contentful-Content-Type", content_type_id)
-        .header("X-Contentful-Version", version)
-        .json(&data)
-        .send()
-        .await?;
+        .json(&data);
+
+    if let Some(version) = version {
+        builder = builder.header("X-Contentful-Version", version.clone());
+    }
+
+    let resp = builder.send().await?;
 
     if resp.status() == StatusCode::OK {
         let json = resp.json::<Value>().await?;

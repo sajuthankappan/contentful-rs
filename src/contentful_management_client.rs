@@ -55,7 +55,8 @@ impl ContentfulManagementClient {
         if let Some(entry_json) =
             http_client::get::<Entry<Value>>(&url, &self.management_api_access_token).await?
         {
-            let entry_typed = helpers::convert_json_object_to_typed_entry(entry_json.fields().clone(), locale)?;
+            let entry_typed =
+                helpers::convert_json_object_to_typed_entry(entry_json.fields().clone(), locale)?;
             let entry = Entry::new(entry_typed, entry_json.sys().clone());
             Ok(Some(entry))
         } else {
@@ -126,7 +127,7 @@ impl ContentfulManagementClient {
         &self,
         entry: &Value,
         id: &str,
-        version: &i32,
+        version: &Option<i32>,
         content_type_id: &str,
     ) -> Result<Value, Box<dyn std::error::Error>> {
         let url = format!(
@@ -139,7 +140,7 @@ impl ContentfulManagementClient {
         let json = http_client::put(
             &url,
             &self.management_api_access_token,
-            version.clone(),
+            version,
             content_type_id,
             entry,
         )
@@ -153,16 +154,17 @@ impl ContentfulManagementClient {
         id: &str,
         content_type_id: &str,
     ) -> Result<Entry<Value>, Box<dyn std::error::Error>> {
-        if let Some(version) = entry.sys().version() {
-            let entry_updated = self
-                .create_or_update_entry_from_json(&json!(entry), id, version, content_type_id)
-                .await?;
-            let entry_updated_string = entry_updated.to_string();
-            let entry = serde_json::from_str::<Entry<Value>>(&entry_updated_string.as_str())?;
-            Ok(entry)
-        } else {
-            todo!();
-        }
+        let entry_updated = self
+            .create_or_update_entry_from_json(
+                &json!(entry),
+                id,
+                entry.sys().version(),
+                content_type_id,
+            )
+            .await?;
+        let entry_updated_string = entry_updated.to_string();
+        let entry = serde_json::from_str::<Entry<Value>>(&entry_updated_string.as_str())?;
+        Ok(entry)
     }
 
     pub async fn create_or_update_entry_for_locale<T>(
