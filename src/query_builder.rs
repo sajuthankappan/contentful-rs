@@ -13,15 +13,21 @@ impl QueryBuilder {
         }
     }
 
-    pub fn content_type_is(mut self, content_type_id: &str) -> QueryBuilder {
+    pub fn content_type_is<S>(mut self, content_type_id: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self.query_string_values
-            .insert("content_type".to_string(), content_type_id.to_string());
+            .insert("content_type".into(), content_type_id.into());
         self
     }
 
-    pub fn order_by(mut self, order: &str) -> QueryBuilder {
+    pub fn order_by<S>(mut self, order: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self.query_string_values
-            .insert("order".to_string(), order.to_string());
+            .insert("order".into(), order.into());
         self
     }
 
@@ -39,80 +45,120 @@ impl QueryBuilder {
 
     pub fn include(mut self, level: i32) -> QueryBuilder {
         self.query_string_values
-            .insert("include".to_string(), level.to_string());
+            .insert("include".into(), level.to_string());
         self
     }
 
-    pub fn locale_is(mut self, locale: &str, value: &str) -> QueryBuilder {
-        self.query_string_values
-            .insert(locale.to_string(), value.to_string());
+    pub fn locale_is<S>(mut self, locale: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
+        self.query_string_values.insert(locale.into(), value.into());
         self
     }
 
-    pub fn field_equals(mut self, field: &str, value: &str) -> QueryBuilder {
-        self.query_string_values
-            .insert(field.to_string(), value.to_string());
+    pub fn field_equals<S>(mut self, field: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
+        self.query_string_values.insert(field.into(), value.into());
         self
     }
 
-    pub fn field_does_not_equal(mut self, field: &str, value: &str) -> QueryBuilder {
+    pub fn field_does_not_equal<S>(mut self, field: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, value, "[ne]");
         self
     }
 
-    pub fn field_equals_all(mut self, field: &str, values: &str) -> QueryBuilder {
+    pub fn field_equals_all<S>(mut self, field: S, values: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, values, "[all]");
         self
     }
 
-    pub fn field_includes(mut self, field: &str, values: &str) -> QueryBuilder {
+    pub fn field_includes<S>(mut self, field: S, values: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, values, "[in]");
         self
     }
 
-    pub fn field_excludes(mut self, field: &str, values: &str) -> QueryBuilder {
+    pub fn field_excludes<S>(mut self, field: S, values: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, values, "[nin]");
         self
     }
 
-    pub fn field_exists(mut self, field: &str, must_exist: bool) -> QueryBuilder {
-        let key = format!("{}[exists]", field);
+    pub fn field_exists<S>(mut self, field: S, must_exist: bool) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
+        let key = format!("{}[exists]", field.into());
         self.query_string_values.insert(key, must_exist.to_string());
         self
     }
 
-    pub fn field_less_than(mut self, field: &str, value: &str) -> QueryBuilder {
+    pub fn field_less_than<S>(mut self, field: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, value, "[lt]");
         self
     }
 
-    pub fn field_less_than_or_equal_to(mut self, field: &str, value: &str) -> QueryBuilder {
+    pub fn field_less_than_or_equal_to<S>(mut self, field: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, value, "[lte]");
         self
     }
 
-    pub fn field_greater_than(mut self, field: &str, value: &str) -> QueryBuilder {
+    pub fn field_greater_than<S>(mut self, field: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, value, "[gt]");
         self
     }
 
-    pub fn field_greater_than_or_equal_to(mut self, field: &str, value: &str) -> QueryBuilder {
+    pub fn field_greater_than_or_equal_to<S>(mut self, field: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, value, "[gte]");
         self
     }
 
-    pub fn field_matches(mut self, field: &str, value: &str) -> QueryBuilder {
+    pub fn field_matches<S>(mut self, field: S, value: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
         self = self.add_field_restriction(field, value, "[match]");
         self
     }
 
-    pub fn links_to_entry(mut self, id: &str) -> QueryBuilder {
-        self = self.add_field_restriction("links_to_entry", id, "");
+    pub fn links_to_entry<S>(mut self, id: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
+        self = self.add_field_restriction("links_to_entry".into(), id.into(), "");
         self
     }
 
-    pub fn links_to_asset(mut self, id: &str) -> QueryBuilder {
-        self = self.add_field_restriction("links_to_asset", id, "");
+    pub fn links_to_asset<S>(mut self, id: S) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
+        self = self.add_field_restriction("links_to_asset".into(), id.into(), "");
         self
     }
 
@@ -134,13 +180,11 @@ impl QueryBuilder {
         query_string
     }
 
-    pub fn add_field_restriction(
-        mut self,
-        field: &str,
-        value: &str,
-        operator: &str,
-    ) -> QueryBuilder {
-        let key = format!("{}{}", field, operator);
+    pub fn add_field_restriction<S>(mut self, field: S, value: S, operator: &str) -> QueryBuilder
+    where
+        S: Into<String>,
+    {
+        let key = format!("{}{}", field.into(), operator);
         self.query_string_values.insert(key, value.into());
         self
     }

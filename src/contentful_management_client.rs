@@ -11,7 +11,10 @@ pub struct ContentfulManagementClient {
 }
 
 impl ContentfulManagementClient {
-    pub fn new(management_api_access_token: &str, space_id: &str) -> ContentfulManagementClient {
+    pub fn new<S>(management_api_access_token: S, space_id: S) -> ContentfulManagementClient
+    where
+        S: Into<String>,
+    {
         let environment_id = "master".into();
         ContentfulManagementClient {
             base_url: "https://api.contentful.com/spaces".into(),

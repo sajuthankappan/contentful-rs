@@ -10,11 +10,14 @@ pub struct ContentfulClient {
 }
 
 impl ContentfulClient {
-    pub fn new(delivery_api_access_token: &str, space_id: &str) -> ContentfulClient {
+    pub fn new<S>(delivery_api_access_token: S, space_id: S) -> ContentfulClient
+    where
+        S: Into<String>,
+    {
         ContentfulClient {
-            base_url: "https://cdn.contentful.com/spaces".to_string(),
-            delivery_api_access_token: delivery_api_access_token.to_string(),
-            space_id: space_id.to_string(),
+            base_url: "https://cdn.contentful.com/spaces".into(),
+            delivery_api_access_token: delivery_api_access_token.into(),
+            space_id: space_id.into(),
         }
     }
 
