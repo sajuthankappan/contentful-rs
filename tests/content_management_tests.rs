@@ -22,7 +22,6 @@ async fn get_entry_works() {
     assert_eq!(actual_name, expected_name);
 }
 
-
 #[tokio::test]
 async fn get_entry_for_locale_works() {
     setup();
@@ -157,6 +156,66 @@ async fn get_entry_and_update_works() {
     let mut new_person_entry = actual.clone();
     let mut new_person = new_person_entry.fields().clone();
     new_person.title = "new title".into();
+    new_person_entry.set_fields(new_person);
+
+    let content_type_id = "person";
+    let updated_person = contentful_client.create_or_update_entry_for_locale(&new_person_entry, entry_id, locale, content_type_id).await;
+    dbg!(&updated_person);
+}
+
+
+#[tokio::test]
+async fn get_entry_and_update_for_value_works() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_MANAGEMENT_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client =
+        ContentfulManagementClient::new(access_token.as_str(), space_id.as_str());
+    let expected_name = "Saju";
+    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k";
+    let locale = "en-US";
+    let actual = contentful_client
+        .get_entry(&entry_id)
+        .await
+        .unwrap().unwrap();
+    dbg!(&actual);
+    let actual_person = actual.fields();
+    let actual_name = actual_person["name"][locale].clone();
+    assert_eq!(actual_name, expected_name);
+
+    let mut new_person_entry = actual.clone();
+    let mut new_person = new_person_entry.fields().clone();
+    new_person["title"] = json!({locale: "new title"});
+    new_person_entry.set_fields(new_person);
+
+    let content_type_id = "person";
+    let updated_person = contentful_client.create_or_update_entry(&new_person_entry, entry_id, content_type_id).await;
+    dbg!(&updated_person);
+}
+
+
+#[tokio::test]
+async fn get_entry_and_update_for_locale_for_value_works() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_MANAGEMENT_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client =
+        ContentfulManagementClient::new(access_token.as_str(), space_id.as_str());
+    let expected_name = "Saju";
+    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k";
+    let locale = "en-US";
+    let actual = contentful_client
+        .get_entry_for_locale::<Value>(&entry_id, locale)
+        .await
+        .unwrap().unwrap();
+    dbg!(&actual);
+    let actual_person = actual.fields();
+    let actual_name = actual_person["name"].clone();
+    assert_eq!(actual_name, expected_name);
+
+    let mut new_person_entry = actual.clone();
+    let mut new_person = new_person_entry.fields().clone();
+    new_person["title"] = "new title".into();
     new_person_entry.set_fields(new_person);
 
     let content_type_id = "person";

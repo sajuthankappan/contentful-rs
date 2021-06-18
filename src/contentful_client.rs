@@ -7,6 +7,7 @@ pub struct ContentfulClient {
     delivery_api_access_token: String,
     space_id: String,
     base_url: String,
+    environment_id: String,
 }
 
 impl ContentfulClient {
@@ -14,11 +15,51 @@ impl ContentfulClient {
     where
         S: Into<String>,
     {
+        let environment_id = "master".into();
         ContentfulClient {
             base_url: "https://cdn.contentful.com/spaces".into(),
             delivery_api_access_token: delivery_api_access_token.into(),
             space_id: space_id.into(),
+            environment_id,
         }
+    }
+
+    pub fn with_environment<S>(
+        delivery_api_access_token: S,
+        space_id: S,
+        environment_id: S,
+    ) -> ContentfulClient
+    where
+        S: Into<String>,
+    {
+        ContentfulClient {
+            base_url: "https://cdn.contentful.com/spaces".into(),
+            delivery_api_access_token: delivery_api_access_token.into(),
+            space_id: space_id.into(),
+            environment_id: environment_id.into(),
+        }
+    }
+
+    fn get_entry_url(&self, entry_id: &str) -> String {
+        let url = format!(
+            "{base_url}/{space_id}/environments/{environment_id}/entries/{entry_id}",
+            base_url = &self.base_url,
+            space_id = &self.space_id,
+            environment_id = &self.environment_id,
+            entry_id = &entry_id
+        );
+        url
+    }
+
+    fn get_query_string_url(&self, query_string: &str) -> String {
+        let url = format!(
+            "{base_url}/{space_id}/environments/{environment}/entries{query_string}",
+            base_url = &self.base_url,
+            space_id = &self.space_id,
+            environment = &self.environment_id,
+            query_string = &query_string
+        );
+        url
     }
 
     pub async fn get_entry<T>(
@@ -43,14 +84,7 @@ impl ContentfulClient {
         &self,
         entry_id: &str,
     ) -> Result<Option<Entry<Value>>, Box<dyn std::error::Error>> {
-        let environment = "master";
-        let url = format!(
-            "{base_url}/{space_id}/environments/{environment}/entries/{entry_id}",
-            base_url = &self.base_url,
-            space_id = &self.space_id,
-            environment = &environment,
-            entry_id = &entry_id
-        );
+        let url = self.get_entry_url(entry_id);
         let json_value =
             http_client::get::<Entry<Value>>(&url, &self.delivery_api_access_token).await?;
         Ok(json_value)
@@ -60,14 +94,7 @@ impl ContentfulClient {
         &self,
         entry_id: &str,
     ) -> Result<Option<Value>, Box<dyn std::error::Error>> {
-        let environment = "master";
-        let url = format!(
-            "{base_url}/{space_id}/environments/{environment}/entries/{entry_id}",
-            base_url = &self.base_url,
-            space_id = &self.space_id,
-            environment = &environment,
-            entry_id = &entry_id
-        );
+        let url = self.get_entry_url(entry_id);
         let json_value = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?;
         Ok(json_value)
     }
@@ -97,14 +124,7 @@ impl ContentfulClient {
         for<'a> T: Serialize + Deserialize<'a>,
     {
         log::debug!("query_string: {:?}", &query_string);
-        let environment = "master";
-        let url = format!(
-            "{base_url}/{space_id}/environments/{environment}/entries{query_string}",
-            base_url = &self.base_url,
-            space_id = &self.space_id,
-            environment = &environment,
-            query_string = &query_string
-        );
+        let url = self.get_query_string_url(query_string);
         if let Some(json) = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?
         {
             if let Some(mut items) = json.clone().get_mut("items") {

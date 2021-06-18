@@ -24,10 +24,23 @@ impl ContentfulManagementClient {
         }
     }
 
-    pub async fn get_entry(
-        &self,
-        entry_id: &str,
-    ) -> Result<Option<Entry<Value>>, Box<dyn std::error::Error>> {
+    pub fn with_environment<S>(
+        management_api_access_token: S,
+        space_id: S,
+        environment_id: S,
+    ) -> ContentfulManagementClient
+    where
+        S: Into<String>,
+    {
+        ContentfulManagementClient {
+            base_url: "https://api.contentful.com/spaces".into(),
+            management_api_access_token: management_api_access_token.into(),
+            space_id: space_id.into(),
+            environment_id: environment_id.into(),
+        }
+    }
+
+    fn get_entry_url(&self, entry_id: &str) -> String {
         let url = format!(
             "{base_url}/{space_id}/environments/{environment_id}/entries/{entry_id}",
             base_url = &self.base_url,
@@ -35,6 +48,23 @@ impl ContentfulManagementClient {
             environment_id = &self.environment_id,
             entry_id = &entry_id
         );
+        url
+    }
+    fn get_entries_url(&self) -> String {
+        let url = format!(
+            "{base_url}/{space_id}/environments/{environment_id}/entries",
+            base_url = &self.base_url,
+            space_id = &self.space_id,
+            environment_id = &self.environment_id,
+        );
+        url
+    }
+
+    pub async fn get_entry(
+        &self,
+        entry_id: &str,
+    ) -> Result<Option<Entry<Value>>, Box<dyn std::error::Error>> {
+        let url = self.get_entry_url(&entry_id);
         let entry =
             http_client::get::<Entry<Value>>(&url, &self.management_api_access_token).await?;
         Ok(entry)
@@ -48,13 +78,7 @@ impl ContentfulManagementClient {
     where
         T: DeserializeOwned + Serialize,
     {
-        let url = format!(
-            "{base_url}/{space_id}/environments/{environment_id}/entries/{entry_id}",
-            base_url = &self.base_url,
-            space_id = &self.space_id,
-            environment_id = &self.environment_id,
-            entry_id = &entry_id
-        );
+        let url = self.get_entry_url(&entry_id);
         if let Some(entry_json) =
             http_client::get::<Entry<Value>>(&url, &self.management_api_access_token).await?
         {
@@ -75,12 +99,7 @@ impl ContentfulManagementClient {
     where
         T: DeserializeOwned,
     {
-        let url = format!(
-            "{base_url}/{space_id}/environments/{environment_id}/entries",
-            base_url = &self.base_url,
-            space_id = &self.space_id,
-            environment_id = &self.environment_id,
-        );
+        let url = self.get_entries_url();
         let mut json = http_client::post(
             &url,
             &self.management_api_access_token,
@@ -117,7 +136,7 @@ impl ContentfulManagementClient {
     where
         T: DeserializeOwned + Serialize,
     {
-        let entry_to_create = helpers::reconstruct_json_object(entry, locale)?;
+        let entry_to_create = helpers::reconstruct_json_object_with_locale(entry, locale)?;
         let updated_entry_json = self
             .create_entry::<Value>(&entry_to_create, content_type_id)
             .await?;
@@ -129,17 +148,11 @@ impl ContentfulManagementClient {
     pub async fn create_or_update_entry_from_json(
         &self,
         entry: &Value,
-        id: &str,
+        entry_id: &str,
         version: &Option<i32>,
         content_type_id: &str,
     ) -> Result<Value, Box<dyn std::error::Error>> {
-        let url = format!(
-            "{base_url}/{space_id}/environments/{environment_id}/entries/{id}",
-            base_url = &self.base_url,
-            space_id = &self.space_id,
-            environment_id = &self.environment_id,
-            id = &id,
-        );
+        let url = self.get_entry_url(entry_id);
         let json = http_client::put(
             &url,
             &self.management_api_access_token,
@@ -180,7 +193,7 @@ impl ContentfulManagementClient {
     where
         T: DeserializeOwned + Serialize,
     {
-        let entry_json = helpers::reconstruct_json_object(entry.fields(), locale)?;
+        let entry_json = helpers::reconstruct_json_object_with_locale(entry.fields(), locale)?;
         let entry_to_update = Entry::new(entry_json, entry.sys().clone());
         let updated_entry_json = self
             .create_or_update_entry(&entry_to_update, id, content_type_id)
@@ -198,7 +211,7 @@ mod helpers {
     use serde::{de::DeserializeOwned, Serialize};
     use serde_json::{json, Value};
 
-    pub fn reconstruct_json_object<T>(
+    pub fn reconstruct_json_object_with_locale<T>(
         entry: &T,
         locale: &str,
     ) -> Result<Value, Box<dyn std::error::Error>>
@@ -211,13 +224,13 @@ mod helpers {
         if entry_json.is_object() {
             let entry_object = entry_json.as_object_mut().unwrap();
             for (field_name, field_value) in entry_object {
-                if field_value.is_object() {
-                    todo!();
+                /*if field_value.is_object() {
+                    fields_map.insert(field_name.into(), field_value.clone()); //TODO
                 } else if field_value.is_array() {
-                    todo!();
-                } else {
+                    fields_map.insert(field_name.into(), field_value.clone()); //TODO
+                } else {*/
                     fields_map.insert(field_name.into(), json!({ locale: field_value }));
-                }
+                //}
             }
         } else {
             unimplemented!();
