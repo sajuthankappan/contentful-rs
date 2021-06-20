@@ -11,10 +11,7 @@ pub struct ContentfulClient {
 }
 
 impl ContentfulClient {
-    pub fn new<S>(delivery_api_access_token: S, space_id: S) -> ContentfulClient
-    where
-        S: Into<String>,
-    {
+    pub fn new(delivery_api_access_token: &str, space_id: &str) -> ContentfulClient {
         let environment_id = "master".into();
         ContentfulClient {
             base_url: "https://cdn.contentful.com/spaces".into(),
@@ -25,13 +22,10 @@ impl ContentfulClient {
     }
 
     pub fn with_environment<S>(
-        delivery_api_access_token: S,
-        space_id: S,
-        environment_id: S,
-    ) -> ContentfulClient
-    where
-        S: Into<String>,
-    {
+        delivery_api_access_token: &str,
+        space_id: &str,
+        environment_id: &str,
+    ) -> ContentfulClient {
         ContentfulClient {
             base_url: "https://cdn.contentful.com/spaces".into(),
             delivery_api_access_token: delivery_api_access_token.into(),

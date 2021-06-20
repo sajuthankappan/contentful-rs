@@ -11,10 +11,7 @@ pub struct ContentfulManagementClient {
 }
 
 impl ContentfulManagementClient {
-    pub fn new<S>(management_api_access_token: S, space_id: S) -> ContentfulManagementClient
-    where
-        S: Into<String>,
-    {
+    pub fn new(management_api_access_token: &str, space_id: &str) -> ContentfulManagementClient {
         let environment_id = "master".into();
         ContentfulManagementClient {
             base_url: "https://api.contentful.com/spaces".into(),
@@ -25,13 +22,10 @@ impl ContentfulManagementClient {
     }
 
     pub fn with_environment<S>(
-        management_api_access_token: S,
-        space_id: S,
-        environment_id: S,
-    ) -> ContentfulManagementClient
-    where
-        S: Into<String>,
-    {
+        management_api_access_token: &str,
+        space_id: &str,
+        environment_id: &str,
+    ) -> ContentfulManagementClient {
         ContentfulManagementClient {
             base_url: "https://api.contentful.com/spaces".into(),
             management_api_access_token: management_api_access_token.into(),
@@ -229,7 +223,7 @@ mod helpers {
                 } else if field_value.is_array() {
                     fields_map.insert(field_name.into(), field_value.clone()); //TODO
                 } else {*/
-                    fields_map.insert(field_name.into(), json!({ locale: field_value }));
+                fields_map.insert(field_name.into(), json!({ locale: field_value }));
                 //}
             }
         } else {
