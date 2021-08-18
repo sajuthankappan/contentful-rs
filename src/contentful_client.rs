@@ -64,8 +64,8 @@ impl ContentfulClient {
         for<'a> T: Serialize + Deserialize<'a>,
     {
         if let Some(entry) = self.get_contentful_entry(entry_id).await? {
-            let mut entry_json_value = entry.fields().clone();
-            entry_json_value["sys"] = json!(entry.sys());
+            let mut entry_json_value = entry.fields.clone();
+            entry_json_value["sys"] = json!(entry.sys);
             let entry_string = entry_json_value.to_string();
             let entry = serde_json::from_str::<T>(&entry_string.as_str())?;
             Ok(Some(entry))

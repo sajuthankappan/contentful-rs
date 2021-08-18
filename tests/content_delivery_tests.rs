@@ -18,7 +18,7 @@ async fn get_entry_works() {
     dbg!(&actual);
     let actual_name = actual.name.as_str();
     assert_eq!(actual_name, expected_name);
-    let created_at = actual.sys.created_at();
+    let created_at = actual.sys.created_at;
     dbg!(created_at);
 }
 

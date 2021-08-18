@@ -77,8 +77,8 @@ impl ContentfulManagementClient {
             http_client::get::<Entry<Value>>(&url, &self.management_api_access_token).await?
         {
             let entry_typed =
-                helpers::convert_json_object_to_typed_entry(entry_json.fields().clone(), locale)?;
-            let entry = Entry::new(entry_typed, entry_json.sys().clone());
+                helpers::convert_json_object_to_typed_entry(entry_json.fields.clone(), locale)?;
+            let entry = Entry::new(entry_typed, entry_json.sys.clone());
             Ok(Some(entry))
         } else {
             Ok(None)
@@ -168,7 +168,7 @@ impl ContentfulManagementClient {
             .create_or_update_entry_from_json(
                 &json!(entry),
                 id,
-                entry.sys().version(),
+                &entry.sys.version,
                 content_type_id,
             )
             .await?;
@@ -187,16 +187,16 @@ impl ContentfulManagementClient {
     where
         T: DeserializeOwned + Serialize,
     {
-        let entry_json = helpers::reconstruct_json_object_with_locale(entry.fields(), locale)?;
-        let entry_to_update = Entry::new(entry_json, entry.sys().clone());
+        let entry_json = helpers::reconstruct_json_object_with_locale(&entry.fields, locale)?;
+        let entry_to_update = Entry::new(entry_json, entry.sys.clone());
         let updated_entry_json = self
             .create_or_update_entry(&entry_to_update, id, content_type_id)
             .await?;
         let updated_entry_typed = helpers::convert_json_object_to_typed_entry(
-            json!(updated_entry_json.fields()),
+            json!(updated_entry_json.fields),
             locale,
         )?;
-        let updated_entry = Entry::new(updated_entry_typed, updated_entry_json.sys().clone());
+        let updated_entry = Entry::new(updated_entry_typed, updated_entry_json.sys);
         Ok(updated_entry)
     }
 }

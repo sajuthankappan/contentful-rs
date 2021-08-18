@@ -18,7 +18,7 @@ async fn get_entry_works() {
         .await
         .unwrap().unwrap();
     dbg!(&actual);
-    let actual_name = actual.fields()["name"]["en-US"].clone();
+    let actual_name = actual.fields["name"]["en-US"].clone();
     assert_eq!(actual_name, expected_name);
 }
 
@@ -37,7 +37,7 @@ async fn get_entry_for_locale_works() {
         .await
         .unwrap().unwrap();
     dbg!(&actual);
-    let actual_name = actual.fields().name.clone();
+    let actual_name = actual.fields.name;
     assert_eq!(actual_name, expected_name);
 }
 
@@ -130,7 +130,7 @@ async fn create_or_update_entry_for_locale_works() {
         .await
         .unwrap();
     dbg!(&entry_updated);
-    let actual_name = entry_updated.fields().clone().name;
+    let actual_name = entry_updated.fields.name;
     assert_eq!(actual_name, expected_name);
 }
 
@@ -149,14 +149,14 @@ async fn get_entry_and_update_works() {
         .await
         .unwrap().unwrap();
     dbg!(&actual);
-    let actual_person = actual.fields();
+    let actual_person = actual.clone().fields;
     let actual_name = actual_person.name.clone();
     assert_eq!(actual_name, expected_name);
 
     let mut new_person_entry = actual.clone();
-    let mut new_person = new_person_entry.fields().clone();
+    let mut new_person = new_person_entry.fields;
     new_person.title = "new title".into();
-    new_person_entry.set_fields(new_person);
+    new_person_entry.fields = new_person;
 
     let content_type_id = "person";
     let updated_person = contentful_client.create_or_update_entry_for_locale(&new_person_entry, entry_id, locale, content_type_id).await;
@@ -179,14 +179,14 @@ async fn get_entry_and_update_for_value_works() {
         .await
         .unwrap().unwrap();
     dbg!(&actual);
-    let actual_person = actual.fields();
+    let actual_person = actual.clone().fields;
     let actual_name = actual_person["name"][locale].clone();
     assert_eq!(actual_name, expected_name);
 
     let mut new_person_entry = actual.clone();
-    let mut new_person = new_person_entry.fields().clone();
+    let mut new_person = new_person_entry.fields;
     new_person["title"] = json!({locale: "new title"});
-    new_person_entry.set_fields(new_person);
+    new_person_entry.fields = new_person;
 
     let content_type_id = "person";
     let updated_person = contentful_client.create_or_update_entry(&new_person_entry, entry_id, content_type_id).await;
@@ -209,14 +209,14 @@ async fn get_entry_and_update_for_locale_for_value_works() {
         .await
         .unwrap().unwrap();
     dbg!(&actual);
-    let actual_person = actual.fields();
+    let actual_person = actual.clone().fields;
     let actual_name = actual_person["name"].clone();
     assert_eq!(actual_name, expected_name);
 
     let mut new_person_entry = actual.clone();
-    let mut new_person = new_person_entry.fields().clone();
+    let mut new_person = new_person_entry.fields;
     new_person["title"] = "new title".into();
-    new_person_entry.set_fields(new_person);
+    new_person_entry.fields = new_person;
 
     let content_type_id = "person";
     let updated_person = contentful_client.create_or_update_entry_for_locale(&new_person_entry, entry_id, locale, content_type_id).await;
