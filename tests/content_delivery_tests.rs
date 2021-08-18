@@ -11,7 +11,7 @@ async fn get_entry_works() {
     let expected_name = "Saju";
     let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k";
     let actual = contentful_client
-        .get_entry::<SimplePerson>(&entry_id.to_string())
+        .get_entry::<SimplePerson>(entry_id)
         .await
         .unwrap()
         .unwrap();
@@ -29,9 +29,9 @@ async fn get_entry_json_value_works() {
     let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
     let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
     let expected_name = "Saju";
-    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k".to_string();
+    let entry_id = "3YrHEsZ9iUsEQOu6IQsI6k";
     let actual = contentful_client
-        .get_entry_json_value(&entry_id)
+        .get_entry_json_value(entry_id)
         .await
         .unwrap()
         .unwrap();
@@ -50,7 +50,7 @@ async fn get_entries_by_query_string_works() {
     let name = "Saju";
     let query_string = format!("?content_type=person&fields.name={}&include=3", &name);
     let actual = contentful_client
-        .get_entries_by_query_string::<Person>(query_string.as_str())
+        .get_entries_by_query_string::<Person>(&query_string)
         .await
         .unwrap();
     dbg!(&actual);
