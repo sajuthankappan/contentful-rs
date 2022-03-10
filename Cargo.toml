@@ -1,15 +1,10 @@
 [package]
-name = "contentful"
-version = "0.7.3"
-authors = ["Saju Thankappan <sajuthankappan@gmail.com>"]
+name = "contentful-fork"
+version = "0.0.1"
+authors = ["Ahmed Umran Hussain <umran.hussein@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "Contentful API Rust Client"
-homepage = "https://github.com/sajuthankappan/contentful-rs"
-repository = "https://github.com/sajuthankappan/contentful-rs"
-readme = "README.md"
-keywords = ["contentful", "cms"]
-categories = ["api-bindings"]
+description = "A fork of the contentful crate with support for JSON fields"
 
 [dependencies]
 log = "0.4.14"
