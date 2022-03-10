@@ -182,7 +182,10 @@ impl ContentfulClient {
         includes: &Value,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let sys_type = value["sys"]["type"].clone();
-        if sys_type == "Entry" {
+
+        if sys_type == Value::Null {
+            // Do nothing as this field is meant to be raw JSON.
+        } else if sys_type == "Entry" {
             self.resolve_entry(value, &includes)?;
         //*value = value["fields"].clone();
         } else if sys_type == "Link" {
