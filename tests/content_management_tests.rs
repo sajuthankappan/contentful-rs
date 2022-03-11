@@ -1,7 +1,4 @@
-use contentful_fork::{
-    models::{Entry, SystemProperties},
-    ContentfulManagementClient,
-};
+use contentful::{ContentfulManagementClient, models::{Entry, SystemProperties}};
 use dotenv;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -19,8 +16,7 @@ async fn get_entry_works() {
     let actual = contentful_client
         .get_entry(&entry_id)
         .await
-        .unwrap()
-        .unwrap();
+        .unwrap().unwrap();
     dbg!(&actual);
     let actual_name = actual.fields["name"]["en-US"].clone();
     assert_eq!(actual_name, expected_name);
@@ -39,8 +35,7 @@ async fn get_entry_for_locale_works() {
     let actual = contentful_client
         .get_entry_for_locale::<Person>(&entry_id, locale)
         .await
-        .unwrap()
-        .unwrap();
+        .unwrap().unwrap();
     dbg!(&actual);
     let actual_name = actual.fields.name;
     assert_eq!(actual_name, expected_name);
@@ -152,8 +147,7 @@ async fn get_entry_and_update_works() {
     let actual = contentful_client
         .get_entry_for_locale::<Person>(&entry_id, locale)
         .await
-        .unwrap()
-        .unwrap();
+        .unwrap().unwrap();
     dbg!(&actual);
     let actual_person = actual.clone().fields;
     let actual_name = actual_person.name.clone();
@@ -165,11 +159,10 @@ async fn get_entry_and_update_works() {
     new_person_entry.fields = new_person;
 
     let content_type_id = "person";
-    let updated_person = contentful_client
-        .create_or_update_entry_for_locale(&new_person_entry, entry_id, locale, content_type_id)
-        .await;
+    let updated_person = contentful_client.create_or_update_entry_for_locale(&new_person_entry, entry_id, locale, content_type_id).await;
     dbg!(&updated_person);
 }
+
 
 #[tokio::test]
 async fn get_entry_and_update_for_value_works() {
@@ -184,8 +177,7 @@ async fn get_entry_and_update_for_value_works() {
     let actual = contentful_client
         .get_entry(&entry_id)
         .await
-        .unwrap()
-        .unwrap();
+        .unwrap().unwrap();
     dbg!(&actual);
     let actual_person = actual.clone().fields;
     let actual_name = actual_person["name"][locale].clone();
@@ -197,11 +189,10 @@ async fn get_entry_and_update_for_value_works() {
     new_person_entry.fields = new_person;
 
     let content_type_id = "person";
-    let updated_person = contentful_client
-        .create_or_update_entry(&new_person_entry, entry_id, content_type_id)
-        .await;
+    let updated_person = contentful_client.create_or_update_entry(&new_person_entry, entry_id, content_type_id).await;
     dbg!(&updated_person);
 }
+
 
 #[tokio::test]
 async fn get_entry_and_update_for_locale_for_value_works() {
@@ -216,8 +207,7 @@ async fn get_entry_and_update_for_locale_for_value_works() {
     let actual = contentful_client
         .get_entry_for_locale::<Value>(&entry_id, locale)
         .await
-        .unwrap()
-        .unwrap();
+        .unwrap().unwrap();
     dbg!(&actual);
     let actual_person = actual.clone().fields;
     let actual_name = actual_person["name"].clone();
@@ -229,9 +219,7 @@ async fn get_entry_and_update_for_locale_for_value_works() {
     new_person_entry.fields = new_person;
 
     let content_type_id = "person";
-    let updated_person = contentful_client
-        .create_or_update_entry_for_locale(&new_person_entry, entry_id, locale, content_type_id)
-        .await;
+    let updated_person = contentful_client.create_or_update_entry_for_locale(&new_person_entry, entry_id, locale, content_type_id).await;
     dbg!(&updated_person);
 }
 

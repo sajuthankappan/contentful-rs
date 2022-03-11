@@ -1,4 +1,4 @@
-use contentful_fork::{models::Asset, models::SystemProperties, ContentfulClient, QueryBuilder};
+use contentful::{models::Asset, models::SystemProperties, ContentfulClient, QueryBuilder};
 use dotenv;
 use serde::{Deserialize, Serialize};
 
