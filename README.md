@@ -1,4 +1,9 @@
-# contentful-rs
+# contentful-rs &emsp; [![Latest Version]][crates.io] [![Docs]][docs.rs]
+
+[Latest Version]: https://img.shields.io/crates/v/contentful.svg
+[crates.io]: https://crates.io/crates/contentful
+[Docs]: https://docs.rs/contentful/badge.svg
+[docs.rs]: https://docs.rs/contentful
 
 Contentful API Rust Client 
 
