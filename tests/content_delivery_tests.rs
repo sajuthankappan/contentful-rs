@@ -1,6 +1,7 @@
 use contentful::{models::Asset, models::SystemProperties, ContentfulClient, QueryBuilder};
 use dotenv;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[tokio::test]
 async fn get_entry_works() {
@@ -100,6 +101,7 @@ struct Person {
     favorite_product: Option<Product>,
     interested_products: Option<Vec<Product>>,
     image: Option<Asset>,
+    json_field: Option<Value>,
     //sys: SystemProperties,
 }
 

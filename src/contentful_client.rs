@@ -181,24 +181,27 @@ impl ContentfulClient {
         value: &mut Value,
         includes: &Value,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let sys_type = value["sys"]["type"].clone();
-
-        if sys_type == Value::Null {
-            // Do nothing as this field is meant to be raw JSON.
-        } else if sys_type == "Entry" {
-            self.resolve_entry(value, &includes)?;
-        //*value = value["fields"].clone();
-        } else if sys_type == "Link" {
-            self.resolve_link(value, &includes)?;
-        //*value = value["fields"].clone();
-        } else {
-            let node_type = value["nodeType"].clone();
-            if node_type == "document" {
-                log::warn!("TODO: richtext");
+        if let Some(sys) = value.get("sys") {
+            if let Some(sys_type) = sys.get("type") {
+                if sys_type == "Entry" {
+                    self.resolve_entry(value, &includes)?;
+                } else if sys_type == "Link" {
+                    self.resolve_link(value, &includes)?;
+                } else {
+                    let node_type = value["nodeType"].clone();
+                    if node_type == "document" {
+                        log::warn!("TODO: Richtext is not yet implemented");
+                    } else {
+                        unimplemented!("{} - {} not implemented for {}", &sys_type, &node_type, &value);
+                    }
+                }
             } else {
-                unimplemented!("{} - {} not implemented", &sys_type, &node_type);
+                unimplemented!("sys.type do not exist, though sys exists")    // TODO: Can this ever happen?
             }
+        } else {
+            // Do nothing, as it likely a json object
         }
+        
         Ok(())
     }
 
