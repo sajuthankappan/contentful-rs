@@ -78,6 +78,38 @@ async fn get_entries_by_type_works() {
     assert_eq!(actual_name, name);
 }
 
+#[tokio::test]
+async fn get_entries_wccg() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_ACCESS_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
+    let query_builder = QueryBuilder::new()
+        .field_equals("fields.id", "2021-jan-8days-commute")
+        .include(5);
+    let actual = contentful_client
+        .get_entries_by_type::<Value>("eventOption", Some(query_builder))
+        .await
+        .unwrap();
+    dbg!(&actual);
+}
+
+#[tokio::test]
+async fn get_entries_wccg2() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_ACCESS_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
+    let query_builder = QueryBuilder::new()
+        .field_equals("fields.id", "WinterCommute2023")
+        .include(5);
+    let actual = contentful_client
+        .get_entries_by_type::<Value>("eventOption", Some(query_builder))
+        .await
+        .unwrap();
+    dbg!(&actual);
+}
+
 fn setup() {
     dotenv::dotenv().ok();
     let _ = env_logger::builder().is_test(true).try_init();

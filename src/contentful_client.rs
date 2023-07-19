@@ -125,6 +125,9 @@ impl ContentfulClient {
                 if items.is_array() {
                     if let Some(includes) = json.get("includes") {
                         self.resolve_array(&mut items, &includes)?;
+                    } else {
+                        let includes = Value::default();
+                        self.resolve_array(&mut items, &includes)?;
                     }
 
                     let ar_string = items.to_string();
@@ -192,16 +195,21 @@ impl ContentfulClient {
                     if node_type == "document" {
                         log::warn!("TODO: Richtext is not yet implemented");
                     } else {
-                        unimplemented!("{} - {} not implemented for {}", &sys_type, &node_type, &value);
+                        unimplemented!(
+                            "{} - {} not implemented for {}",
+                            &sys_type,
+                            &node_type,
+                            &value
+                        );
                     }
                 }
             } else {
-                unimplemented!("sys.type do not exist, though sys exists")    // TODO: Can this ever happen?
+                unimplemented!("sys.type do not exist, though sys exists") // TODO: Can this ever happen?
             }
         } else {
             // Do nothing, as it likely a json object
         }
-        
+
         Ok(())
     }
 
