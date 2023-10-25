@@ -109,6 +109,23 @@ async fn get_entries_wccg2() {
     dbg!(&actual);
 }
 
+#[tokio::test]
+async fn get_entries_wccg3() {
+    setup();
+    let access_token = std::env::var("CONTENTFUL_ACCESS_TOKEN").unwrap();
+    let space_id = std::env::var("CONTENTFUL_SPACE_ID").unwrap();
+    let contentful_client = ContentfulClient::new(access_token.as_str(), space_id.as_str());
+    let query_builder = QueryBuilder::new()
+        .field_equals("fields.id", "WinterCommute2023")
+        .select_fields("fields.title,fields.description")
+        .include(5);
+    let actual = contentful_client
+        .get_entries_by_type::<Value>("eventOption", Some(query_builder))
+        .await
+        .unwrap();
+    dbg!(&actual);
+}
+
 fn setup() {
     dotenv::dotenv().ok();
     let _ = env_logger::builder().is_test(true).try_init();

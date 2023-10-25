@@ -43,8 +43,9 @@ impl QueryBuilder {
         self
     }
 
-    pub fn locale_is(mut self, locale: &str, value: &str) -> QueryBuilder {
-        self.query_string_values.insert(locale.into(), value.into());
+    pub fn locale_is(mut self, value: &str) -> QueryBuilder {
+        self.query_string_values
+            .insert("locale".into(), value.into());
         self
     }
 
@@ -111,6 +112,12 @@ impl QueryBuilder {
 
     pub fn links_to_asset(mut self, id: &str) -> QueryBuilder {
         self = self.add_field_restriction("links_to_asset", id, "");
+        self
+    }
+
+    pub fn select_fields(mut self, value: &str) -> QueryBuilder {
+        self.query_string_values
+            .insert("select".into(), value.into());
         self
     }
 
