@@ -67,7 +67,7 @@ impl ContentfulClient {
             let mut entry_json_value = entry.fields.clone();
             entry_json_value["sys"] = json!(entry.sys);
             let entry_string = entry_json_value.to_string();
-            let entry = serde_json::from_str::<T>(&entry_string.as_str())?;
+            let entry = serde_json::from_str::<T>(entry_string.as_str())?;
             Ok(Some(entry))
         } else {
             Ok(None)
@@ -121,17 +121,17 @@ impl ContentfulClient {
         let url = self.get_query_string_url(query_string);
         if let Some(json) = http_client::get::<Value>(&url, &self.delivery_api_access_token).await?
         {
-            if let Some(mut items) = json.clone().get_mut("items") {
+            if let Some(items) = json.clone().get_mut("items") {
                 if items.is_array() {
                     if let Some(includes) = json.get("includes") {
-                        self.resolve_array(&mut items, &includes)?;
+                        self.resolve_array(items, includes)?;
                     } else {
                         let includes = Value::default();
-                        self.resolve_array(&mut items, &includes)?;
+                        self.resolve_array(items, &includes)?;
                     }
 
                     let ar_string = items.to_string();
-                    let entries = serde_json::from_str::<Vec<T>>(&ar_string.as_str())?;
+                    let entries = serde_json::from_str::<Vec<T>>(ar_string.as_str())?;
                     Ok(entries)
                 } else {
                     unimplemented!();
@@ -168,7 +168,7 @@ impl ContentfulClient {
         let items = value.as_array_mut().unwrap();
         for item in items {
             if item.is_object() {
-                self.resolve_object(item, &includes)?;
+                self.resolve_object(item, includes)?;
             } else if item.is_string() || item.is_number() {
                 // do nothing
             } else {
@@ -187,9 +187,9 @@ impl ContentfulClient {
         if let Some(sys) = value.get("sys") {
             if let Some(sys_type) = sys.get("type") {
                 if sys_type == "Entry" {
-                    self.resolve_entry(value, &includes)?;
+                    self.resolve_entry(value, includes)?;
                 } else if sys_type == "Link" {
-                    self.resolve_link(value, &includes)?;
+                    self.resolve_link(value, includes)?;
                 } else {
                     let node_type = value["nodeType"].clone();
                     if node_type == "document" {
@@ -223,9 +223,9 @@ impl ContentfulClient {
                 let entry_object = fields.as_object_mut().unwrap();
                 for (_field_name, field_value) in entry_object {
                     if field_value.is_object() {
-                        self.resolve_object(field_value, &includes)?;
+                        self.resolve_object(field_value, includes)?;
                     } else if field_value.is_array() {
-                        self.resolve_array(field_value, &includes)?;
+                        self.resolve_array(field_value, includes)?;
                     } else {
                         // Regular string, number, etc, values. No need to do anything.
                     }
@@ -266,12 +266,12 @@ impl ContentfulClient {
             let included_entries = includes["Entry"].as_array().unwrap();
             let mut filtered_entries = included_entries
                 .iter()
-                .filter(|entry| entry["sys"]["id"].to_string() == link_id.to_string())
+                .filter(|entry| entry["sys"]["id"] == link_id)
                 .take(1);
             let linked_entry = filtered_entries.next();
             if let Some(entry) = linked_entry {
                 let mut entry = entry.clone();
-                self.resolve_entry(&mut entry, &includes)?;
+                self.resolve_entry(&mut entry, includes)?;
                 *value = entry;
                 //value["fields"] = entry["fields"].clone();
                 //*value = entry["fields"].clone();
@@ -280,7 +280,7 @@ impl ContentfulClient {
             let included_assets = includes["Asset"].as_array().unwrap();
             let mut filtered_assets = included_assets
                 .iter()
-                .filter(|entry| entry["sys"]["id"].to_string() == link_id.to_string())
+                .filter(|entry| entry["sys"]["id"] == link_id)
                 .take(1);
             let linked_asset = filtered_assets.next();
             if let Some(asset) = linked_asset {

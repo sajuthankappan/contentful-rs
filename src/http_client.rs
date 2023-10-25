@@ -1,17 +1,16 @@
-use reqwest;
 use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 pub(crate) async fn get<T>(
-    url: &String,
-    bearer_token: &String,
+    url: &str,
+    bearer_token: &str,
 ) -> Result<Option<T>, Box<dyn std::error::Error>>
 where
     T: DeserializeOwned,
 {
     let client = reqwest::Client::new();
-    let resp = client.get(url).bearer_auth(&bearer_token).send().await?;
+    let resp = client.get(url).bearer_auth(bearer_token).send().await?;
 
     match resp.status() {
         StatusCode::OK => {
@@ -36,7 +35,7 @@ pub(crate) async fn post(
     let client = reqwest::Client::new();
     let resp = client
         .post(url)
-        .bearer_auth(&bearer_token)
+        .bearer_auth(bearer_token)
         .header("X-Contentful-Content-Type", content_type_id)
         .json(&data)
         .send()
@@ -65,12 +64,12 @@ pub(crate) async fn put(
     let client = reqwest::Client::new();
     let mut builder = client
         .put(url)
-        .bearer_auth(&bearer_token)
+        .bearer_auth(bearer_token)
         .header("X-Contentful-Content-Type", content_type_id)
         .json(&data);
 
     if let Some(version) = version {
-        builder = builder.header("X-Contentful-Version", version.clone());
+        builder = builder.header("X-Contentful-Version", *version);
     }
 
     let resp = builder.send().await?;

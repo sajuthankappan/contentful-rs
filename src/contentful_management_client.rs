@@ -58,7 +58,7 @@ impl ContentfulManagementClient {
         &self,
         entry_id: &str,
     ) -> Result<Option<Entry<Value>>, Box<dyn std::error::Error>> {
-        let url = self.get_entry_url(&entry_id);
+        let url = self.get_entry_url(entry_id);
         let entry =
             http_client::get::<Entry<Value>>(&url, &self.management_api_access_token).await?;
         Ok(entry)
@@ -72,7 +72,7 @@ impl ContentfulManagementClient {
     where
         T: DeserializeOwned + Serialize,
     {
-        let url = self.get_entry_url(&entry_id);
+        let url = self.get_entry_url(entry_id);
         if let Some(entry_json) =
             http_client::get::<Entry<Value>>(&url, &self.management_api_access_token).await?
         {
@@ -103,7 +103,7 @@ impl ContentfulManagementClient {
         .await?;
         let entry_created_fields = json.get_mut("fields").unwrap();
         let entry_created_string = entry_created_fields.to_string();
-        let entry_created = serde_json::from_str::<T>(&entry_created_string.as_str())?;
+        let entry_created = serde_json::from_str::<T>(&entry_created_string)?;
 
         Ok(entry_created)
     }
@@ -173,7 +173,7 @@ impl ContentfulManagementClient {
             )
             .await?;
         let entry_updated_string = entry_updated.to_string();
-        let entry = serde_json::from_str::<Entry<Value>>(&entry_updated_string.as_str())?;
+        let entry = serde_json::from_str::<Entry<Value>>(&entry_updated_string)?;
         Ok(entry)
     }
 
@@ -192,10 +192,8 @@ impl ContentfulManagementClient {
         let updated_entry_json = self
             .create_or_update_entry(&entry_to_update, id, content_type_id)
             .await?;
-        let updated_entry_typed = helpers::convert_json_object_to_typed_entry(
-            json!(updated_entry_json.fields),
-            locale,
-        )?;
+        let updated_entry_typed =
+            helpers::convert_json_object_to_typed_entry(json!(updated_entry_json.fields), locale)?;
         let updated_entry = Entry::new(updated_entry_typed, updated_entry_json.sys);
         Ok(updated_entry)
     }
@@ -229,7 +227,8 @@ mod helpers {
         } else {
             unimplemented!();
         }
-        return Ok(json!(fields_map));
+
+        Ok(json!(fields_map))
     }
 
     pub fn convert_json_object_to_typed_entry<T>(
@@ -258,7 +257,7 @@ mod helpers {
         }
 
         let entry_string = json!(entry_created_map).to_string();
-        let created_entry = serde_json::from_str::<T>(&entry_string.as_str())?;
+        let created_entry = serde_json::from_str::<T>(&entry_string)?;
         Ok(created_entry)
     }
 }

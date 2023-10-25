@@ -105,12 +105,12 @@ impl QueryBuilder {
     }
 
     pub fn links_to_entry(mut self, id: &str) -> QueryBuilder {
-        self = self.add_field_restriction("links_to_entry".into(), id.into(), "");
+        self = self.add_field_restriction("links_to_entry", id, "");
         self
     }
 
     pub fn links_to_asset(mut self, id: &str) -> QueryBuilder {
-        self = self.add_field_restriction("links_to_asset".into(), id.into(), "");
+        self = self.add_field_restriction("links_to_asset", id, "");
         self
     }
 
@@ -119,12 +119,12 @@ impl QueryBuilder {
         let mut has_query = false;
         for (query_key, query_value) in &self.query_string_values {
             if has_query {
-                query_string.push_str("&");
+                query_string.push('&');
             } else {
-                query_string.push_str("?");
+                query_string.push('?');
             }
             query_string.push_str(query_key);
-            query_string.push_str("=");
+            query_string.push('=');
             query_string.push_str(query_value.as_str());
             has_query = true;
         }
@@ -141,5 +141,11 @@ impl QueryBuilder {
         let key = format!("{}{}", field, operator);
         self.query_string_values.insert(key, value.into());
         self
+    }
+}
+
+impl Default for QueryBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }
