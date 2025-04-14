@@ -1,16 +1,14 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Space {
     pub name: String,
     pub locales: Vec<Locale>,
-    #[serde(rename = "sys")]
     pub system_properties: SystemProperties,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Locale {
     pub name: String,
     pub code: String,
@@ -21,8 +19,7 @@ pub struct Locale {
     pub content_delivery_api: bool,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct SystemProperties {
     pub id: String,
     pub version: Option<i32>,
@@ -54,8 +51,7 @@ impl SystemProperties {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Entry<T> {
     pub sys: SystemProperties,
     pub fields: T,
@@ -70,15 +66,14 @@ where
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Asset {
     pub description: Option<String>,
     pub title: Option<String>,
     pub file: File,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct File {
     pub file_name: String,
     pub content_type: String,
@@ -87,13 +82,13 @@ pub struct File {
     pub details: FileDetails,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct FileDetails {
     pub size: i64,
     pub image: Option<ImageDetails>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ImageDetails {
     pub height: i32,
     pub width: i32,
